@@ -55,7 +55,7 @@ typedef struct{
 void creation_graphe(Graphe* G, const char* grapheFileName);
 void Afficher_Graphe(Graphe* G);
 void Simulation(Graphe* G);
-void Condition_Initiale(Graphe* G);
+void Condition_Initiale(Graphe* G,Graphe* Gi);
 void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
 void MetricsCalc(Graphe* Gi, Graphe *Gf);
@@ -65,15 +65,14 @@ char* statusToStr(status s);
 int main(void)
 {
 	Graphe G;
-	Graphe* Gf;
+	Graphe Gi;
 	srand(time(NULL));
 	creation_graphe(&G,"graph.txt");
-	Condition_Initiale(&G);
-	Gf = (Graphe*)malloc(sizeof(G));
-	memcpy(Gf,&G,sizeof(G));
+	creation_graphe(&Gi,"graph.txt");
+	Condition_Initiale(&G,&Gi);
 	printf("Veuillez sélectionner votre option :\n1 : Lancer la simulation\n");
 	Simulation(&G);
-	MetricsCalc(&G,Gf);
+	MetricsCalc(&Gi,&G);
 
 	return 0;
 }
@@ -137,7 +136,7 @@ void Afficher_Graphe(Graphe* G)
 	}
 }
 
-void Condition_Initiale(Graphe* G)
+void Condition_Initiale(Graphe* G,Graphe* Gi)
 {
 	int Choix_Noeud,Choix=1;
 	while(Choix==1)
@@ -147,6 +146,9 @@ void Condition_Initiale(Graphe* G)
 		G->population[Choix_Noeud-1].etat=infecte;
 		G->metrics->healthyCount--;
 		G->metrics->infectedCount++;
+		Gi->population[Choix_Noeud-1].etat=infecte;
+		Gi->metrics->healthyCount--;
+		Gi->metrics->infectedCount++;
 		printf("Quelqu'un d'autre ?\nOui : 1\nNon : 2\n");
 		scanf("%d", &Choix);
 		printf("\n");
