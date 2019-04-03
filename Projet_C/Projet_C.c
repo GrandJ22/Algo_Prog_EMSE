@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #define LAMBDA 0.25
 #define BETA 0.3
@@ -31,12 +32,25 @@ typedef struct{
 	int temps_incubation;
 }Personne;
 
+typedef struct{
+	int simulationDuration;
+	int initialInfectedCount;
+	float avgInfectionDate;
+	int healthyCount;
+	int immuneCount;
+	int infectedCount;
+	int sickCount;
+	int deadCount;
+}metricsArray;
 
 typedef struct{
 	int nb_sommets;
 	Arc** voisins;
 	Personne* population;
+	metricsArray* metrics;
 }Graphe;
+
+
 
 void creation_graphe(Graphe* G, const char* grapheFileName);
 void Afficher_Graphe(Graphe* G);
@@ -44,16 +58,23 @@ void Simulation(Graphe* G);
 void Condition_Initiale(Graphe* G);
 void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
+void MetricsCalc(Graphe* Gi, Graphe *Gf);
+char* statusToStr(status s);
+
 
 int main(void)
 {
 	Graphe G;
+	Graphe* Gf;
 	srand(time(NULL));
 	creation_graphe(&G,"graph.txt");
 	Condition_Initiale(&G);
+	Gf = (Graphe*)malloc(sizeof(G));
+	memcpy(Gf,&G,sizeof(G));
 	printf("Veuillez sélectionner votre option :\n1 : Lancer la simulation\n");
 	Simulation(&G);
-	Afficher_Graphe(&G);
+	MetricsCalc(&G,Gf);
+
 	return 0;
 }
 
@@ -62,12 +83,13 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 	FILE *fp;
 	Arc* Constructeur;
 	fp = fopen(grapheFileName, "r");
-	
+	G->metrics=(metricsArray*) malloc(sizeof(metricsArray));
 	if (fp != NULL)
 	{
 		int nb_sommets, nb_arcs, u, v;
 		fscanf(fp, "%d%d", &nb_sommets, &nb_arcs);	
 		G->nb_sommets=nb_sommets;
+		G->metrics->healthyCount=nb_sommets;
 		G->voisins=(Arc**) malloc(nb_sommets*sizeof(Arc*));
 		for (int i = 0; i < nb_sommets; i++)
 		{ 
@@ -104,28 +126,7 @@ void Afficher_Graphe(Graphe* G)
 	char Etat_Lecture[10];
 	for(int i=0;i<G->nb_sommets;i++)
 	{
-		switch(G->population[i].etat)
-		{
-			case sain :
-			 strcpy(Etat_Lecture,"sain");
-			break;
-			case immunise :
-			 strcpy(Etat_Lecture,"immunise");
-			break;			
-			case malade :
-			 strcpy(Etat_Lecture,"malade");
-			break;			
-			case mort :
-			 strcpy(Etat_Lecture,"mort");
-			break;
-			case infecte :
-			 strcpy(Etat_Lecture,"infecte");
-			break;
-			case zombie : 
-			 strcpy(Etat_Lecture,"zombie");
-			break;
-		}
-		printf("Personne numéro %d Etat : %s \tVoisins : ",i+1,Etat_Lecture);
+		printf("Personne numéro %d Etat : %s\tVoisins : ",i+1,statusToStr(G->population[i].etat));
 		Curseur=G->voisins[i];
 		while(Curseur!=NULL)
 		{
@@ -144,6 +145,8 @@ void Condition_Initiale(Graphe* G)
 		printf("Qui va mourir ce soir ?\n");
 		scanf("%d", &Choix_Noeud);
 		G->population[Choix_Noeud-1].etat=infecte;
+		G->metrics->healthyCount--;
+		G->metrics->infectedCount++;
 		printf("Quelqu'un d'autre ?\nOui : 1\nNon : 2\n");
 		scanf("%d", &Choix);
 		printf("\n");
@@ -167,6 +170,8 @@ void Test_Sain(Graphe* G,int source)
 	if(r<=LAMBDA/sickCounter)
 	{
 		G->population[source].etat=infecte;
+		G->metrics->healthyCount--;
+		G->metrics->infectedCount++;
 	}
 }
 
@@ -187,10 +192,15 @@ void Journee(Graphe* G)
 			 	if(G->population[i].temps_incubation>=DUREE_INCUBATION)
 			 	{
 			 		G->population[i].etat=malade;
+					G->metrics->infectedCount--;
+					G->metrics->sickCount++;
+					break;
 			 	}
 				if(r<=GAMMA)
 				{
 					G->population[i].etat=immunise;
+					G->metrics->infectedCount--;
+					G->metrics->immuneCount++;
 				}
 			break;
 
@@ -199,6 +209,8 @@ void Journee(Graphe* G)
 			 	if(r<=BETA)
 			 	{
 			 		G->population[i].etat=mort;
+					G->metrics->sickCount--;
+					G->metrics->deadCount++;
 			 	}
 			break;
 		}
@@ -216,6 +228,7 @@ void Simulation(Graphe* G)
 		if(choix==1)
 		{
 			Journee(G);
+			G->metrics->simulationDuration++;
 		}
 		else if(choix==2)
 		{
@@ -223,11 +236,50 @@ void Simulation(Graphe* G)
 			{
 				Journee(G);
 			}
+			G->metrics->simulationDuration+=100;
+
 		}
 	}
 }
 
+void MetricsCalc(Graphe* Gi, Graphe* Gf){
+	FILE *file;
+	file = fopen("Métriques.txt","w");
+	fprintf(file,"Temps de simulation total : %d jours\n",Gf->metrics->simulationDuration);
+	fprintf(file,"Probabilité d'être infecté (lambda) : %f \n",LAMBDA);
+	fprintf(file,"Probabilité d'être immunisé (gamma) : %f \n",GAMMA);
+	fprintf(file,"Probabilité de mourir (beta) : %f \n",BETA);
+	fprintf(file,"Proportion finale d'individus sains  : %f%c \n",(float)Gf->metrics->healthyCount*100/Gf->nb_sommets,'%');
+	fprintf(file,"Proportion finale d'individus immunisés  : %f%c \n",(float)Gf->metrics->immuneCount*100/Gf->nb_sommets,'%');
+	fprintf(file,"Proportion finale d'individus infectés  : %f%c\n",(float)Gf->metrics->infectedCount*100/Gf->nb_sommets,'%');
+	fprintf(file,"Proportion finale d'individus malades  : %f%c\n",(float)Gf->metrics->sickCount*100/Gf->nb_sommets,'%');
+	fprintf(file,"Proportion finale d'individus morts  : %f%c\n",(float)Gf->metrics->deadCount*100/Gf->nb_sommets,'%');
+	//ajouter la fonction de calcul du plus proche malade
+	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate);
+	for(int i=0;i<Gi->nb_sommets;i++){
+		fprintf(file,"Individu n°%d initialement %s finalement %s\n",i+1,statusToStr(Gi->population[i].etat),statusToStr(Gf->population[i].etat));
+	}
+	fclose(file);
 
+
+}
+
+char* statusToStr(status s){
+	switch(s) {
+		case sain :
+			return "sain";
+		case immunise :
+			return "immunisé";
+		case malade :
+			return "malade";
+		case mort :
+			return "mort";
+		case infecte :
+			return "infecté";
+		case zombie :
+			return "zombie";
+	}
+}
 
 
 
