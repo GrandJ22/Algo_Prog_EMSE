@@ -6,7 +6,8 @@
 
 #define LAMBDA 0.25
 #define BETA 0.3
-#define GAMMA 0.3
+#define GAMMA 0.05
+
 #define DELTA 0.4
 #define DUREE_INCUBATION 3
 #define DUREE_ZOMBIE 3
@@ -124,7 +125,7 @@ void Afficher_Graphe(Graphe* G)
 			 strcpy(Etat_Lecture,"zombie");
 			break;
 		}
-		printf("Personne numéro %d Etat : %s Voisins : ",i+1,Etat_Lecture);
+		printf("Personne numéro %d Etat : %s \tVoisins : ",i+1,Etat_Lecture);
 		Curseur=G->voisins[i];
 		while(Curseur!=NULL)
 		{
@@ -151,19 +152,21 @@ void Condition_Initiale(Graphe* G)
 
 void Test_Sain(Graphe* G,int source)
 {
-	float r;
-	Arc* Curseur=G->voisins[source-1];
-	while(Curseur!=NULL && G->population[source-1].etat!=infecte)
+	float r=((float)rand())/RAND_MAX;
+	int sickCounter = 0;
+	Arc* Curseur=G->voisins[source];
+
+	while(Curseur!=NULL)
 	{
 		if(G->population[Curseur->num].etat==malade)
 		{
-			r=((float)rand())/RAND_MAX;
-			if(r<=LAMBDA)
-			{
-				G->population[source-1].etat=infecte;
-			}
+			sickCounter++;
 		}
 		Curseur=Curseur->Suivant;
+	}
+	if(r<=LAMBDA/sickCounter)
+	{
+		G->population[source].etat=infecte;
 	}
 }
 
@@ -176,25 +179,27 @@ void Journee(Graphe* G)
 		switch(G->population[i].etat)
 		{
 			case sain :
-			 Test_Sain(G,i+1);
+			 	Test_Sain(G,i);
 			break;
 			case infecte :
-			 G->population[i].temps_incubation++;
-			 if(G->population[i].temps_incubation>=3)
-			 {
-			 	G->population[i].etat=malade;
-			 }
+			 	G->population[i].temps_incubation++;
+				r=((float)rand())/RAND_MAX;
+			 	if(G->population[i].temps_incubation>=DUREE_INCUBATION)
+			 	{
+			 		G->population[i].etat=malade;
+			 	}
+				if(r<=GAMMA)
+				{
+					G->population[i].etat=immunise;
+				}
 			break;
+
 			case malade :
-			 r=((float)rand())/RAND_MAX;
-			 if(r<=BETA)
-			 {
-			 	G->population[i].etat=mort;
-			 }
-			 else if(r>BETA && r<=(BETA+GAMMA))
-			 {
-			 	G->population[i].etat=immunise;
-			 }
+			 	r=((float)rand())/RAND_MAX;
+			 	if(r<=BETA)
+			 	{
+			 		G->population[i].etat=mort;
+			 	}
 			break;
 		}
 	}
