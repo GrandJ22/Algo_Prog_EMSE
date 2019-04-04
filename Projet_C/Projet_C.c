@@ -30,6 +30,7 @@ typedef struct _Arc{
 typedef struct{
 	status etat;
 	int temps_incubation;
+	int infection_date;
 }Personne;
 
 typedef struct{
@@ -60,7 +61,7 @@ void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
 void MetricsCalc(Graphe* Gi, Graphe *Gf);
 char* statusToStr(status s);
-
+int closestSick(Graphe* G,int source);
 
 int main(void)
 {
@@ -109,6 +110,7 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 		{
 			G->population[i].etat=sain;
 			G->population[i].temps_incubation=0;
+
 		}
 	}
 	else 
@@ -149,6 +151,7 @@ void Condition_Initiale(Graphe* G,Graphe* Gi)
 		Gi->population[Choix_Noeud-1].etat=infecte;
 		Gi->metrics->healthyCount--;
 		Gi->metrics->infectedCount++;
+		G->population[Choix_Noeud-1].infection_date=0;
 		printf("Quelqu'un d'autre ?\nOui : 1\nNon : 2\n");
 		scanf("%d", &Choix);
 		printf("\n");
@@ -174,6 +177,7 @@ void Test_Sain(Graphe* G,int source)
 		G->population[source].etat=infecte;
 		G->metrics->healthyCount--;
 		G->metrics->infectedCount++;
+		G->population[source].infection_date=G->metrics->simulationDuration;
 	}
 }
 
@@ -237,8 +241,8 @@ void Simulation(Graphe* G)
 			for(int i=0;i<100;i++)
 			{
 				Journee(G);
+				G->metrics->simulationDuration++;
 			}
-			G->metrics->simulationDuration+=100;
 
 		}
 	}
@@ -246,21 +250,27 @@ void Simulation(Graphe* G)
 
 void MetricsCalc(Graphe* Gi, Graphe* Gf){
 	FILE *file;
+	Gf->metrics->avgInfectionDate=0;
+	int unhealthyCount = 0;
 	file = fopen("Métriques.txt","w");
 	fprintf(file,"Temps de simulation total : %d jours\n",Gf->metrics->simulationDuration);
 	fprintf(file,"Probabilité d'être infecté (lambda) : %f \n",LAMBDA);
 	fprintf(file,"Probabilité d'être immunisé (gamma) : %f \n",GAMMA);
 	fprintf(file,"Probabilité de mourir (beta) : %f \n",BETA);
-	fprintf(file,"Proportion finale d'individus sains  : %f%c \n",(float)Gf->metrics->healthyCount*100/Gf->nb_sommets,'%');
-	fprintf(file,"Proportion finale d'individus immunisés  : %f%c \n",(float)Gf->metrics->immuneCount*100/Gf->nb_sommets,'%');
-	fprintf(file,"Proportion finale d'individus infectés  : %f%c\n",(float)Gf->metrics->infectedCount*100/Gf->nb_sommets,'%');
-	fprintf(file,"Proportion finale d'individus malades  : %f%c\n",(float)Gf->metrics->sickCount*100/Gf->nb_sommets,'%');
-	fprintf(file,"Proportion finale d'individus morts  : %f%c\n",(float)Gf->metrics->deadCount*100/Gf->nb_sommets,'%');
-	//ajouter la fonction de calcul du plus proche malade
-	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate);
+	fprintf(file,"Proportion finale d'individus sains  : %f%% \n",(float)Gf->metrics->healthyCount*100/Gf->nb_sommets);
+	fprintf(file,"Proportion finale d'individus immunisés  : %f%% \n",(float)Gf->metrics->immuneCount*100/Gf->nb_sommets);
+	fprintf(file,"Proportion finale d'individus infectés  : %f%%\n",(float)Gf->metrics->infectedCount*100/Gf->nb_sommets);
+	fprintf(file,"Proportion finale d'individus malades  : %f%%\n",(float)Gf->metrics->sickCount*100/Gf->nb_sommets);
+	fprintf(file,"Proportion finale d'individus morts  : %f%%\n",(float)Gf->metrics->deadCount*100/Gf->nb_sommets);
 	for(int i=0;i<Gi->nb_sommets;i++){
 		fprintf(file,"Individu n°%d initialement %s finalement %s\n",i+1,statusToStr(Gi->population[i].etat),statusToStr(Gf->population[i].etat));
+		if(Gf->population[i].etat != sain && Gf->population[i].etat !=immunise)
+		{
+			Gf->metrics->avgInfectionDate+=Gf->population[i].infection_date*closestSick(Gf,i);
+			unhealthyCount++;
+		}
 	}
+	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/unhealthyCount);
 	fclose(file);
 
 
@@ -283,7 +293,12 @@ char* statusToStr(status s){
 	}
 }
 
+int closestSick(Graphe* G,int source){
+	int distance = 0;
 
+
+	return distance;
+}
 
 
 
