@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <pFile.h>
 
 #define LAMBDA 0.25
 #define BETA 0.3
@@ -22,10 +23,7 @@ typedef enum{
 	zombie
 }status;
 
-typedef struct _Arc{
-	int num;
-	struct _Arc* Suivant;
-}Arc;
+
 
 typedef struct{
 	status etat;

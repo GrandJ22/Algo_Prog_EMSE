@@ -4,17 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct _cell 
-{
-	int val;
-	int poid;
-	struct	_cell* suivant;
-} cell;
+
+
+typedef struct _Arc{
+	int num;
+	struct _Arc* Suivant;
+}Arc;
 
 typedef struct 
 {
-	cell* tete;
-	cell* queue; 
+	Arc* tete;
+	Arc* queue;
 } File;
 
 File Initialiser();
