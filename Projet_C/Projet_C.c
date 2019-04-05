@@ -172,7 +172,7 @@ void Test_Sain(Graphe* G,int source)
 		}
 		Curseur=Curseur->Suivant;
 	}
-	if(r<=LAMBDA/sickCounter)
+	if(r/sickCounter<=LAMBDA)
 	{
 		G->population[source].etat=infecte;
 		G->metrics->healthyCount--;
@@ -251,7 +251,8 @@ void Simulation(Graphe* G)
 void MetricsCalc(Graphe* Gi, Graphe* Gf){
 	FILE *file;
 	Gf->metrics->avgInfectionDate=0;
-	int unhealthyCount = 0;
+	int unhealthyCount = 0, pathSum = 0, pathLength;
+
 	file = fopen("Métriques.txt","w");
 	fprintf(file,"Temps de simulation total : %d jours\n",Gf->metrics->simulationDuration);
 	fprintf(file,"Probabilité d'être infecté (lambda) : %f \n",LAMBDA);
@@ -266,11 +267,13 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 		fprintf(file,"Individu n°%d initialement %s finalement %s\n",i+1,statusToStr(Gi->population[i].etat),statusToStr(Gf->population[i].etat));
 		if(Gf->population[i].etat != sain && Gf->population[i].etat !=immunise)
 		{
-			Gf->metrics->avgInfectionDate+=Gf->population[i].infection_date*closestSick(Gf,i);
+			pathLength = closestSick(Gf,i);
+			pathSum+=pathLength;
+			Gf->metrics->avgInfectionDate+=Gf->population[i].infection_date*pathLength;
 			unhealthyCount++;
 		}
 	}
-	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/unhealthyCount);
+	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/(unhealthyCount*pathSum));
 	fclose(file);
 
 
