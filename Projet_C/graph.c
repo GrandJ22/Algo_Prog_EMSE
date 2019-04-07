@@ -32,7 +32,8 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 		{
 			G->population[i].etat=sain;
 			G->population[i].temps_incubation=0;
-
+			G->population[i].sickness_duration=0;
+			G->population[i].zombie_lifelength=0;
 		}
 	}
 	else
@@ -88,6 +89,7 @@ void Afficher_Graphe(Graphe* G)
 		}
 		printf("\n");
 	}
+	printf("\n");
 }
 
 char* statusToStr(status s){

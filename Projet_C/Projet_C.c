@@ -10,9 +10,13 @@
 #define BETA 0.3
 #define GAMMA 0.05
 
-#define DELTA 0.4
+
 #define DUREE_INCUBATION 3
+
+
 #define DUREE_ZOMBIE 3
+#define ZOMBIE_LIFE_EXPENTANCY 3
+#define DELTA 0.4
 
 
 
@@ -65,18 +69,20 @@ void Condition_Initiale(Graphe* G,Graphe* Gi)
 void Test_Sain(Graphe* G,int source)
 {
 	float r=((float)rand())/RAND_MAX;
-	int sickCounter = 0;
+	int sickCounter = 0, zombieCounter = 0;
 	Arc* Curseur=G->voisins[source];
 
 	while(Curseur!=NULL)
 	{
-		if(G->population[Curseur->num].etat==malade)
-		{
+		if(G->population[Curseur->num].etat==malade){
 			sickCounter++;
+		}
+		else if(G->population[Curseur->num].etat==zombie){
+			zombieCounter++;
 		}
 		Curseur=Curseur->Suivant;
 	}
-	if(r/sickCounter<=LAMBDA)
+	if(r<=LAMBDA*sickCounter+DELTA*zombieCounter)
 	{
 		G->population[source].etat=infecte;
 		G->metrics->healthyCount--;
@@ -115,6 +121,12 @@ void Journee(Graphe* G)
 			    break;
 
 			case malade :
+			    if (G->population[i].sickness_duration == DUREE_ZOMBIE){
+                    G->population[i].etat=zombie;
+					G->metrics->sickCount--;
+					G->metrics->zombieCount++;
+                    break;
+			    }
 			 	r=((float)rand())/RAND_MAX;
 			 	if(r<=BETA)
 			 	{
@@ -122,7 +134,16 @@ void Journee(Graphe* G)
 					G->metrics->sickCount--;
 					G->metrics->deadCount++;
 			 	}
+                G->population[i].sickness_duration++;
 			    break;
+			case zombie :
+				if(G->population[i].zombie_lifelength == ZOMBIE_LIFE_EXPENTANCY){
+					G->population[i].etat=mort;
+					G->metrics->zombieCount--;
+					G->metrics->deadCount++;
+				}
+				G->population[i].zombie_lifelength++;
+				break;
 		}
 	}
 }
@@ -134,7 +155,7 @@ void Simulation(Graphe* G)
 	while(choix!=4)
 	{
 		Afficher_Graphe(G);
-		printf("\nVoulez-vous :\n1 : Passer un jour\n2 : Passer cent jours\n3 : Vacciner une partie de la population\n4 : quitter\n");
+		printf("Voulez-vous :\n1 : Passer un jour\n2 : Passer cent jours\n3 : Vacciner une partie de la population\n4 : quitter\n");
 		scanf("%d", &choix);
 		switch(choix){
 		    case 1 :
@@ -176,6 +197,7 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 	fprintf(file,"Proportion finale d'individus immunisés  : %f%% \n",(float)Gf->metrics->immuneCount*100/Gf->nb_sommets);
 	fprintf(file,"Proportion finale d'individus infectés  : %f%%\n",(float)Gf->metrics->infectedCount*100/Gf->nb_sommets);
 	fprintf(file,"Proportion finale d'individus malades  : %f%%\n",(float)Gf->metrics->sickCount*100/Gf->nb_sommets);
+	fprintf(file,"Proportion finale d'individus zombies  : %f%%\n",(float)Gf->metrics->zombieCount*100/Gf->nb_sommets);
 	fprintf(file,"Proportion finale d'individus morts  : %f%%\n",(float)Gf->metrics->deadCount*100/Gf->nb_sommets);
 	for(int i=0;i<Gi->nb_sommets;i++){
 		fprintf(file,"Individu n°%d initialement %s finalement %s\n",i+1,statusToStr(Gi->population[i].etat),statusToStr(Gf->population[i].etat));
@@ -187,7 +209,7 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 			unhealthyCount++;
 		}
 	}
-	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/pathSum);
+	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche infecté : %f jours\n",Gf->metrics->avgInfectionDate/pathSum);
 	fclose(file);
 	printf("Les métriques ont été générées dans le fichier Métriques.txt");
 
@@ -197,17 +219,21 @@ void Vaccination(Graphe* G,int vaccinationNumber){
     int toVaccinate;
     int i = 0,k = 0;
     while (vaccinationNumber != 0){
-        toVaccinate = rand()%G->metrics->healthyCount;
-        while(k != toVaccinate){
+        toVaccinate = (rand()%G->metrics->healthyCount) + 1;
+        do{
             if(G->population[i].etat == sain){
                 k++;
             }
             i++;
-        }
-        G->population[i].etat=immunise;
+        }while(k != toVaccinate);
+        Afficher_Graphe(G);
+        printf("%d %d %d\n",i,k,toVaccinate);
+        G->population[i-1].etat=immunise;
         vaccinationNumber--;
         G->metrics->immuneCount++;
         G->metrics->healthyCount--;
+		i = 0;
+		k = 0;
     }
 }
 

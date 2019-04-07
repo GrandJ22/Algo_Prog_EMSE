@@ -23,6 +23,8 @@ typedef struct{
 	status etat;
 	int temps_incubation;
 	int infection_date;
+	int sickness_duration;
+	int zombie_lifelength;
 }Personne;
 
 typedef struct{
@@ -34,6 +36,7 @@ typedef struct{
 	int infectedCount;
 	int sickCount;
 	int deadCount;
+	int zombieCount;
 }metricsArray;
 
 typedef struct{
