@@ -6,7 +6,7 @@ pFile.o: pFile.c pFile.h
 graph.o: graph.c graph.h pFile.h
 	gcc -c -lm graph.c
 
-Projet_C.o: Projet_C.c Projet\c.h graph.h
+Projet_C.o: Projet_C.c Projet_c.h graph.h
 	gcc -c Projet_C.c
 
 Projet_C: Projet_C.o pFile.o graph.o
