@@ -18,18 +18,17 @@ int main(void)
 		 Creer_Graphe_Grille(n);
 		 creation_graphe(&G,"graph_grille.txt");
 		 creation_graphe(&Gi,"graph_grille.txt");
-		 Condition_Initiale(&G,&Gi);
-		 Simulation(&G,1);
+
 		break;
 		case 2 :
 		 printf("Veuillez saisir le nom du fichier à exploiter\nNom du fichier :");
 		 scanf("%s", Nom_Fichier);
 		 creation_graphe(&G,Nom_Fichier);
 		 creation_graphe(&Gi,Nom_Fichier);
-		 Condition_Initiale(&G,&Gi);
-		 Simulation(&G,2);
 		break;
 	}
+	Condition_Initiale(&G,&Gi);
+	Simulation(&G,Choix);
 	MetricsCalc(&Gi,&G);
 
 	return 0;

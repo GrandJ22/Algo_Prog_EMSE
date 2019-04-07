@@ -37,11 +37,72 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 	}
 	else
 	{
-		printf("Le fichier n'a pas été trouvé.");
+		printf("Le fichier n'a pas ï¿½tï¿½ trouvï¿½.");
 	}
 	fclose(fp);
 }
 
+void Creer_Graphe_Grille(int n)
+{
+	FILE* fichier=fopen("graph_grille.txt","w");
+	int nb_arretes=4*n*(n-1);
+	fprintf(fichier,"%d %d\n",n*n,nb_arretes);
+	for(int i=0;i<n*n;i++)
+	{
+		if(i==0)
+		{
+			fprintf(fichier,"1 2\n");
+			fprintf(fichier,"1 %d\n",n+1);
+		}
+		else if(i==(n-1))
+		{
+			fprintf(fichier,"%d %d\n",n,n-1);
+			fprintf(fichier,"%d %d\n",n,2*n);
+		}
+		else if(i==n*(n-1))
+		{
+			fprintf(fichier,"%d %d\n",n*(n-1)+1,n*(n-1)+1-n);
+			fprintf(fichier,"%d %d\n",n*(n-1)+1,n*(n-1)+2);
+		}
+		else if(i==n*n-1)
+		{
+			fprintf(fichier,"%d %d\n",n*n,n*n-1);
+			fprintf(fichier,"%d %d\n",n*n,n*(n-1));
+		}
+		else if( i>=1 && i<=(n-2) )
+		{
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+		}
+		else if( i%n==0 )
+		{
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+		}
+		else if( (i+1)%n==0 )
+		{
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+		}
+		else if( i>=(n*(n-1)+1) && i<=(n*n-2))
+		{
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+		}
+		else
+		{
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+		}
+	}
+	fclose(fichier);
+}
 
 int parcours_largeur(Graphe* G, int sommet_id)
 {
@@ -79,7 +140,7 @@ void Afficher_Graphe_Quelconque(Graphe* G)
 	Arc* Curseur;
 	for(int i=0;i<G->nb_sommets;i++)
 	{
-		printf("Personne numéro %d Etat : %s\tVoisins : ",i+1,statusToStr(G->population[i].etat));
+		printf("Personne numï¿½ro %d Etat : %s\tVoisins : ",i+1,statusToStr(G->population[i].etat));
 		Curseur=G->voisins[i];
 		while(Curseur!=NULL)
 		{
@@ -129,77 +190,17 @@ char* statusToStr(status s){
 		case sain :
 			return "sain";
 		case immunise :
-			return "immunisé";
+			return "immunisÃ©";
 		case malade :
 			return "malade";
 		case mort :
 			return "mort";
 		case infecte :
-			return "infecté";
+			return "infectÃ©";
 		case zombie :
 			return "zombie";
 	}
 }
 
-void Creer_Graphe_Grille(int n)
-{
-	FILE* fichier=fopen("graph_grille.txt","w");
-	int nb_arretes=4*n*(n-1);
-	fprintf(fichier,"%d %d\n",n*n,nb_arretes);
-	for(int i=0;i<n*n;i++)
-	{
-		if(i==0)
-		{
-			fprintf(fichier,"1 2\n");
-			fprintf(fichier,"1 %d\n",n+1);
-		}		
-		else if(i==(n-1))
-		{
-			fprintf(fichier,"%d %d\n",n,n-1);
-			fprintf(fichier,"%d %d\n",n,2*n);
-		}		
-		else if(i==n*(n-1))
-		{
-			fprintf(fichier,"%d %d\n",n*(n-1)+1,n*(n-1)+1-n);
-			fprintf(fichier,"%d %d\n",n*(n-1)+1,n*(n-1)+2);
-		}
-		else if(i==n*n-1)
-		{
-		 	fprintf(fichier,"%d %d\n",n*n,n*n-1);
-			fprintf(fichier,"%d %d\n",n*n,n*(n-1));
-		}	
-		else if( i>=1 && i<=(n-2) )
-		{
-			fprintf(fichier,"%d %d\n",i+1,i);
-			fprintf(fichier,"%d %d\n",i+1,i+1+n);
-			fprintf(fichier,"%d %d\n",i+1,i+2);
-		}
-		else if( i%n==0 )
-		{
-			fprintf(fichier,"%d %d\n",i+1,i+1-n);
-			fprintf(fichier,"%d %d\n",i+1,i+2);
-			fprintf(fichier,"%d %d\n",i+1,i+1+n);
-		}
-		else if( (i+1)%n==0 )
-		{
-			fprintf(fichier,"%d %d\n",i+1,i+1-n);
-			fprintf(fichier,"%d %d\n",i+1,i);
-			fprintf(fichier,"%d %d\n",i+1,i+1+n);
-		}
-		else if( i>=(n*(n-1)+1) && i<=(n*n-2))
-		{
-			fprintf(fichier,"%d %d\n",i+1,i);
-			fprintf(fichier,"%d %d\n",i+1,i+1-n);
-			fprintf(fichier,"%d %d\n",i+1,i+2);
-		}
-		else
-		{
-			fprintf(fichier,"%d %d\n",i+1,i+2);
-			fprintf(fichier,"%d %d\n",i+1,i);
-			fprintf(fichier,"%d %d\n",i+1,i+1+n);
-			fprintf(fichier,"%d %d\n",i+1,i+1-n);
-		}
-	}
-	fclose(fichier);
-}
+
 
