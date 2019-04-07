@@ -168,8 +168,8 @@ void Journee(Graphe* G)
 
 void Simulation(Graphe* G,int Type_Graphe)
 {
-	int choix=1,nb_jours;
-	while(choix!=4)
+	int choix=1,nb_jours,vaccinateCount;
+	while(choix!=5)
 	{
 		switch(Type_Graphe)
 		{
@@ -180,7 +180,7 @@ void Simulation(Graphe* G,int Type_Graphe)
 			 Afficher_Graphe_Quelconque(G);
 			break;
 		}
-		printf("Voulez-vous :\n1 : Passer un jour\n2 : Passer dix jours\n3 : Selectionner le nombre de jours à passer\n4 : quitter\n\nChoix : ");
+		printf("Voulez-vous :\n1 : Passer un jour\n2 : Passer dix jours\n3 : Selectionner le nombre de jours à passer\n4 : Campagne de vaccination\n5 : Quitter\n\nChoix : ");
 		scanf("%d", &choix);
 		switch(choix)
 		{
@@ -204,6 +204,11 @@ void Simulation(Graphe* G,int Type_Graphe)
 			 	G->metrics->simulationDuration++;
 			 }
 			break;
+			case 4 :
+			 printf("Combien de personnes saines voulez-vous vacciner ? (%d personnes saines)",G->metrics->healthyCount);
+			 scanf("%d",&vaccinateCount);
+			 Vaccination(G,vaccinateCount);
+			 break;
 		}
 	}
 }
