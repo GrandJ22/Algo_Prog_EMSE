@@ -4,7 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <graph.h>
+#include "graph.h"
 
 #define LAMBDA 0.25
 #define BETA 0.3
