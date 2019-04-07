@@ -222,8 +222,6 @@ void Vaccination(Graphe* G,int vaccinationNumber){
             }
             i++;
         }while(k != toVaccinate);
-        Afficher_Graphe(G);
-        printf("%d %d %d\n",i,k,toVaccinate);
         G->population[i-1].etat=immunise;
         vaccinationNumber--;
         G->metrics->immuneCount++;
