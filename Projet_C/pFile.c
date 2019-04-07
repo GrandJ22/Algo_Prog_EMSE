@@ -13,31 +13,31 @@ int est_vide(File* pF)
 	return (pF->tete == NULL);
 }
 
-void enfiler(File *pF, int val) 
+void enfiler(File *pF, int num) 
 {
-	cell* pelem = (cell*) malloc(sizeof(cell)); 
-	pelem->val = val;
-	pelem->suivant = NULL; 
+	Arc* pelem = (Arc*) malloc(sizeof(Arc)); 
+	pelem->num = num;
+	pelem->Suivant = NULL; 
 	 
 	if (pF->tete == NULL) // enfiler dans une file nulle
 		pF->tete = pF->queue = pelem; 
 	else 
 	{ 
-		pF->queue->suivant = pelem; 
+		pF->queue->Suivant = pelem; 
 		pF->queue = pelem;
 	}	
 }
 
 int defiler(File *pF) 
 {	
-	int val = pF->tete->val;
+	int num = pF->tete->num;
 
-	cell* ptemp = pF->tete;
-	pF->tete = pF->tete->suivant;
+	Arc* ptemp = pF->tete;
+	pF->tete = pF->tete->Suivant;
 	if (pF->tete == NULL) // file nulle apres avoir defile
 		pF->queue = NULL;
 	free(ptemp);
-	return val;
+	return num;
 }
 
 void detruire (File *pF)

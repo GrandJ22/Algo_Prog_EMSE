@@ -5,6 +5,7 @@
 #include <time.h>
 #include <math.h>
 #include <pFile.h>
+#include <graph.h>
 
 #define LAMBDA 0.25
 #define BETA 0.3
@@ -14,40 +15,9 @@
 #define DUREE_INCUBATION 3
 #define DUREE_ZOMBIE 3
 
-typedef enum{
-	sain,
-	immunise,
-	malade,
-	mort,
-	infecte,
-	zombie
-}status;
 
 
 
-typedef struct{
-	status etat;
-	int temps_incubation;
-	int infection_date;
-}Personne;
-
-typedef struct{
-	int simulationDuration;
-	int initialInfectedCount;
-	float avgInfectionDate;
-	int healthyCount;
-	int immuneCount;
-	int infectedCount;
-	int sickCount;
-	int deadCount;
-}metricsArray;
-
-typedef struct{
-	int nb_sommets;
-	Arc** voisins;
-	Personne* population;
-	metricsArray* metrics;
-}Graphe;
 
 
 
@@ -59,7 +29,6 @@ void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
 void MetricsCalc(Graphe* Gi, Graphe *Gf);
 char* statusToStr(status s);
-int closestSick(Graphe* G,int source);
 
 int main(void)
 {
@@ -265,7 +234,7 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 		fprintf(file,"Individu n°%d initialement %s finalement %s\n",i+1,statusToStr(Gi->population[i].etat),statusToStr(Gf->population[i].etat));
 		if(Gf->population[i].etat != sain && Gf->population[i].etat !=immunise)
 		{
-			pathLength = closestSick(Gf,i);
+			pathLength = parcours_largeur(Gf,i);
 			pathSum+=pathLength;
 			Gf->metrics->avgInfectionDate+=Gf->population[i].infection_date*pathLength;
 			unhealthyCount++;
@@ -292,13 +261,6 @@ char* statusToStr(status s){
 		case zombie :
 			return "zombie";
 	}
-}
-
-int closestSick(Graphe* G,int source){
-	int distance = 0;
-
-
-	return distance;
 }
 
 

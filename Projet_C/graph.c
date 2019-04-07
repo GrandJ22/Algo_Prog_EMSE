@@ -10,7 +10,7 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 		int nb_sommets, nb_arcs, u, v, w;
 		fscanf(fp, "%d%d", &nb_sommets, &nb_arcs);	
 		G->nb_sommets 	= nb_sommets;
-		G->successeurs	= (cell**)malloc(nb_sommets * sizeof(cell*));
+		G->successeurs	= (Arc**)malloc(nb_sommets * sizeof(Arc*));
 
 		for (int i = 0; i < nb_sommets; i++) 
 			G->successeurs[i]	= NULL;
@@ -21,9 +21,9 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 			u--; // decrement pour gerer le decalage entre le numeros des sommets dans le fichiers et les index dans les tableaux
 			v--;
 			//ajout d'un arc (u,v) : un maillon est ajoute en debut de la liste de successeurs de u
-			cell* s		= (cell*) malloc(sizeof(cell));
-			s->val		= v;
-			s->suivant			= G->successeurs[u];
+			Arc* s		= (Arc*) malloc(sizeof(Arc));
+			s->num		= v;
+			s->Suivant			= G->successeurs[u];
 			G->successeurs[u]	= s;
 		}
 	}
@@ -32,7 +32,7 @@ void creation_graphe(Graphe* G, const char* grapheFileName)
 }
 
 
-void parcours_largeur(Graphe* G, int sommet_id) 
+int parcours_largeur(Graphe* G, int sommet_id)
 {
 	File F = Initialiser();
 	int sommet_out;
@@ -49,23 +49,23 @@ void parcours_largeur(Graphe* G, int sommet_id)
 	{ 
 		sommet_out=defiler(&F);
 		// parcours des successeurs du sommet sommet_out et ajout dans la file lorsqu'ils ne sont pas marque 
-		cell* fils = G->successeurs[sommet_out];
+		Arc* fils = G->successeurs[sommet_out];
 		while (fils != NULL) 
 		{
-			if (marque[fils->val] != 1)
+			if (marque[fils->num] != 1)
 			{
-				marque[fils->val] = 1; 
-				printf(" (%d) ", fils->val +1);			
-				enfiler(&F, fils->val);	
+				marque[fils->num] = 1; 
+				printf(" (%d) ", fils->num +1);			
+				enfiler(&F, fils->num);	
 			}
-			fils = fils->suivant;
+			fils = fils->Suivant;
 		}
 	} 
 } 
 
 void affichage_graphe(Graphe* G) 
 {
-	cell* courant;
+	Arc* courant;
 
 	for(int i = 0; i < G->nb_sommets; i++) 
 	{
@@ -73,8 +73,8 @@ void affichage_graphe(Graphe* G)
 		courant = G->successeurs[i];
 		while(courant != NULL)
 		{
-			printf("%d, ", courant->val +1);
-			courant = courant->suivant;
+			printf("%d, ", courant->num +1);
+			courant = courant->Suivant;
 		} 
 		printf("\n");
 	}
