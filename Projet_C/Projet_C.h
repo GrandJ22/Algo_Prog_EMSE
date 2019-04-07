@@ -30,7 +30,7 @@
 
 void creation_graphe(Graphe* G, const char* grapheFileName);
 void Afficher_Graphe(Graphe* G);
-void Simulation(Graphe* G);
+void Simulation(Graphe* G, int Type_Graphe);
 void Condition_Initiale(Graphe* G,Graphe* Gi);
 void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);

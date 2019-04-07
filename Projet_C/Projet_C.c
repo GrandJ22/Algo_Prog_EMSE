@@ -174,6 +174,9 @@ void Simulation(Graphe* G,int Type_Graphe)
 			 	G->metrics->simulationDuration++;
 			 }
 			break;
+		}
+	}
+}
 
 
 void MetricsCalc(Graphe* Gi, Graphe* Gf){
