@@ -3,31 +3,42 @@
 void creation_graphe(Graphe* G, const char* grapheFileName)
 {
 	FILE *fp;
+	Arc* Constructeur;
 	fp = fopen(grapheFileName, "r");
-	
-	if (fp != NULL) // le fichier est trouve
+	G->metrics=(metricsArray*) malloc(sizeof(metricsArray));
+	if (fp != NULL)
 	{
-		int nb_sommets, nb_arcs, u, v, w;
-		fscanf(fp, "%d%d", &nb_sommets, &nb_arcs);	
-		G->nb_sommets 	= nb_sommets;
-		G->successeurs	= (Arc**)malloc(nb_sommets * sizeof(Arc*));
-
-		for (int i = 0; i < nb_sommets; i++) 
-			G->successeurs[i]	= NULL;
-
-		for (int i = 0; i < nb_arcs; i++) 
+		int nb_sommets, nb_arcs, u, v;
+		fscanf(fp, "%d%d", &nb_sommets, &nb_arcs);
+		G->nb_sommets=nb_sommets;
+		G->metrics->healthyCount=nb_sommets;
+		G->voisins=(Arc**) malloc(nb_sommets*sizeof(Arc*));
+		for (int i = 0; i < nb_sommets; i++)
 		{
-			fscanf(fp, "%d %d %d", &u, &v, &w);
-			u--; // decrement pour gerer le decalage entre le numeros des sommets dans le fichiers et les index dans les tableaux
+			G->voisins[i]=NULL;
+		}
+		for (int i = 0; i < nb_arcs; i++)
+		{
+			fscanf(fp, "%d %d", &u, &v);
+			u--;
 			v--;
-			//ajout d'un arc (u,v) : un maillon est ajoute en debut de la liste de successeurs de u
-			Arc* s		= (Arc*) malloc(sizeof(Arc));
-			s->num		= v;
-			s->Suivant			= G->successeurs[u];
-			G->successeurs[u]	= s;
+			Constructeur = (Arc*) malloc(sizeof(Arc));
+			Constructeur->num=v;
+			Constructeur->Suivant=G->voisins[u];
+			G->voisins[u]=Constructeur;
+		}
+		G->population=(Personne*) malloc(G->nb_sommets*sizeof(Personne));
+		for(int i=0;i<nb_sommets;i++)
+		{
+			G->population[i].etat=sain;
+			G->population[i].temps_incubation=0;
+
 		}
 	}
-	else printf("Le fichier n'a pas été trouvé.");
+	else
+	{
+		printf("Le fichier n'a pas été trouvé.");
+	}
 	fclose(fp);
 }
 
@@ -40,44 +51,58 @@ int parcours_largeur(Graphe* G, int sommet_id)
 	
 	for (int i = 0; i < G->nb_sommets; i++)
 		marque[i] = 0;
-
-	sommet_id--; // gestion du decalage entre les numeros des sommmets et leur index dans le tableau
+	// gestion du decalage entre les numeros des sommets et leur index dans le tableau
 	marque[sommet_id] = 1;
 	enfiler(&F, sommet_id);
-
-	while( !est_vide(&F) ) 
+	sommet_out=defiler(&F);
+	while( G->population[sommet_out].etat != infecte )
 	{ 
-		sommet_out=defiler(&F);
+
 		// parcours des successeurs du sommet sommet_out et ajout dans la file lorsqu'ils ne sont pas marque 
-		Arc* fils = G->successeurs[sommet_out];
+		Arc* fils = G->voisins[sommet_out];
 		while (fils != NULL) 
 		{
-			if (marque[fils->num] != 1)
+			if (marque[fils->num] == 0)
 			{
-				marque[fils->num] = 1; 
-				printf(" (%d) ", fils->num +1);			
+				marque[fils->num] = marque[sommet_out] + 1;
 				enfiler(&F, fils->num);	
 			}
 			fils = fils->Suivant;
 		}
-	} 
-} 
+		sommet_out=defiler(&F);
+	}
+	return marque[sommet_out] - 1;
+}
 
-void affichage_graphe(Graphe* G) 
+void Afficher_Graphe(Graphe* G)
 {
-	Arc* courant;
-
-	for(int i = 0; i < G->nb_sommets; i++) 
+	Arc* Curseur;
+	for(int i=0;i<G->nb_sommets;i++)
 	{
-		printf("Sommet %d : ", i+1);
-		courant = G->successeurs[i];
-		while(courant != NULL)
+		printf("Personne numéro %d Etat : %s\tVoisins : ",i+1,statusToStr(G->population[i].etat));
+		Curseur=G->voisins[i];
+		while(Curseur!=NULL)
 		{
-			printf("%d, ", courant->num +1);
-			courant = courant->Suivant;
-		} 
+			printf("%d ",Curseur->num+1);
+			Curseur=Curseur->Suivant;
+		}
 		printf("\n");
 	}
 }
 
-
+char* statusToStr(status s){
+	switch(s) {
+		case sain :
+			return "sain";
+		case immunise :
+			return "immunisé";
+		case malade :
+			return "malade";
+		case mort :
+			return "mort";
+		case infecte :
+			return "infecté";
+		case zombie :
+			return "zombie";
+	}
+}

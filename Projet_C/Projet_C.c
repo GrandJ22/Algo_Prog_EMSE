@@ -18,9 +18,6 @@
 
 
 
-
-
-
 void creation_graphe(Graphe* G, const char* grapheFileName);
 void Afficher_Graphe(Graphe* G);
 void Simulation(Graphe* G);
@@ -28,7 +25,7 @@ void Condition_Initiale(Graphe* G,Graphe* Gi);
 void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
 void MetricsCalc(Graphe* Gi, Graphe *Gf);
-char* statusToStr(status s);
+
 
 int main(void)
 {
@@ -45,65 +42,10 @@ int main(void)
 	return 0;
 }
 
-void creation_graphe(Graphe* G, const char* grapheFileName)
-{
-	FILE *fp;
-	Arc* Constructeur;
-	fp = fopen(grapheFileName, "r");
-	G->metrics=(metricsArray*) malloc(sizeof(metricsArray));
-	if (fp != NULL)
-	{
-		int nb_sommets, nb_arcs, u, v;
-		fscanf(fp, "%d%d", &nb_sommets, &nb_arcs);	
-		G->nb_sommets=nb_sommets;
-		G->metrics->healthyCount=nb_sommets;
-		G->voisins=(Arc**) malloc(nb_sommets*sizeof(Arc*));
-		for (int i = 0; i < nb_sommets; i++)
-		{ 
-			G->voisins[i]=NULL;
-		}		
-		for (int i = 0; i < nb_arcs; i++) 
-		{
-			fscanf(fp, "%d %d", &u, &v);
-			u--;
-			v--;
-			Constructeur = (Arc*) malloc(sizeof(Arc));
-			Constructeur->num=v;
-			Constructeur->Suivant=G->voisins[u];
-			G->voisins[u]=Constructeur;
-		}
-		G->population=(Personne*) malloc(G->nb_sommets*sizeof(Personne));
-		for(int i=0;i<nb_sommets;i++)
-		{
-			G->population[i].etat=sain;
-			G->population[i].temps_incubation=0;
-
-		}
-	}
-	else 
-	{
-		printf("Le fichier n'a pas été trouvé.");
-	}
-	fclose(fp);
-}
 
 
-void Afficher_Graphe(Graphe* G)
-{
-	Arc* Curseur;
-	char Etat_Lecture[10];
-	for(int i=0;i<G->nb_sommets;i++)
-	{
-		printf("Personne numéro %d Etat : %s\tVoisins : ",i+1,statusToStr(G->population[i].etat));
-		Curseur=G->voisins[i];
-		while(Curseur!=NULL)
-		{
-			printf("%d ",Curseur->num+1);
-			Curseur=Curseur->Suivant;
-		}
-		printf("\n");
-	}
-}
+
+
 
 void Condition_Initiale(Graphe* G,Graphe* Gi)
 {
@@ -234,34 +176,19 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 		fprintf(file,"Individu n°%d initialement %s finalement %s\n",i+1,statusToStr(Gi->population[i].etat),statusToStr(Gf->population[i].etat));
 		if(Gf->population[i].etat != sain && Gf->population[i].etat !=immunise)
 		{
-			pathLength = parcours_largeur(Gf,i);
+			pathLength = parcours_largeur(Gi,i);
 			pathSum+=pathLength;
 			Gf->metrics->avgInfectionDate+=Gf->population[i].infection_date*pathLength;
 			unhealthyCount++;
 		}
 	}
-	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/(unhealthyCount*pathSum));
+	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/pathSum);
 	fclose(file);
-
+	printf("Les métriques ont été générées dans le fichier Métriques.txt");
 
 }
 
-char* statusToStr(status s){
-	switch(s) {
-		case sain :
-			return "sain";
-		case immunise :
-			return "immunisé";
-		case malade :
-			return "malade";
-		case mort :
-			return "mort";
-		case infecte :
-			return "infecté";
-		case zombie :
-			return "zombie";
-	}
-}
+
 
 
 
