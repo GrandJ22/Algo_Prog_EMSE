@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <pFile.h>
 #include <graph.h>
 
 #define LAMBDA 0.25
