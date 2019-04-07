@@ -74,7 +74,7 @@ int parcours_largeur(Graphe* G, int sommet_id)
 	return marque[sommet_out] - 1;
 }
 
-void Afficher_Graphe(Graphe* G)
+void Afficher_Graphe_Quelconque(Graphe* G)
 {
 	Arc* Curseur;
 	for(int i=0;i<G->nb_sommets;i++)
@@ -89,6 +89,40 @@ void Afficher_Graphe(Graphe* G)
 		printf("\n");
 	}
 }
+
+void Afficher_Graphe_Grille(Graphe* G)
+{
+	int taille = (int) sqrt( (double) G->nb_sommets );
+	for(int i=0;i<taille;i++)
+	{
+		for(int j=0;j<taille;j++)
+		{
+			switch(G->population[taille*i+j].etat)
+			{
+				case infecte :
+				 printf("\033[0;33m"); //Jaune
+				break;
+				case malade :
+				 printf("\033[0;31m"); //Rouge
+				break;
+				case mort :
+				 printf("\033[0;35m"); //Magenta
+				break;
+				case zombie :
+				 printf("\033[0;32m"); //Vert
+				break;
+				case immunise :
+				 printf("\033[0;36m"); //Cyan
+				break;
+			}
+			printf("%d	", taille*i+j+1);
+			printf("\033[0m");
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+				 
 
 char* statusToStr(status s){
 	switch(s) {
@@ -106,3 +140,66 @@ char* statusToStr(status s){
 			return "zombie";
 	}
 }
+
+void Creer_Graphe_Grille(int n)
+{
+	FILE* fichier=fopen("graph_grille.txt","w");
+	int nb_arretes=4*n*(n-1);
+	fprintf(fichier,"%d %d\n",n*n,nb_arretes);
+	for(int i=0;i<n*n;i++)
+	{
+		if(i==0)
+		{
+			fprintf(fichier,"1 2\n");
+			fprintf(fichier,"1 %d\n",n+1);
+		}		
+		else if(i==(n-1))
+		{
+			fprintf(fichier,"%d %d\n",n,n-1);
+			fprintf(fichier,"%d %d\n",n,2*n);
+		}		
+		else if(i==n*(n-1))
+		{
+			fprintf(fichier,"%d %d\n",n*(n-1)+1,n*(n-1)+1-n);
+			fprintf(fichier,"%d %d\n",n*(n-1)+1,n*(n-1)+2);
+		}
+		else if(i==n*n-1)
+		{
+		 	fprintf(fichier,"%d %d\n",n*n,n*n-1);
+			fprintf(fichier,"%d %d\n",n*n,n*(n-1));
+		}	
+		else if( i>=1 && i<=(n-2) )
+		{
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+		}
+		else if( i%n==0 )
+		{
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+		}
+		else if( (i+1)%n==0 )
+		{
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+		}
+		else if( i>=(n*(n-1)+1) && i<=(n*n-2))
+		{
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+		}
+		else
+		{
+			fprintf(fichier,"%d %d\n",i+1,i+2);
+			fprintf(fichier,"%d %d\n",i+1,i);
+			fprintf(fichier,"%d %d\n",i+1,i+1+n);
+			fprintf(fichier,"%d %d\n",i+1,i+1-n);
+		}
+	}
+	fclose(fichier);
+}
+

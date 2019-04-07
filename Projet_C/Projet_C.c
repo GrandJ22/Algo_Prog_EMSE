@@ -1,48 +1,39 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <time.h>
-#include <math.h>
-#include "graph.h"
-
-#define LAMBDA 0.25
-#define BETA 0.3
-#define GAMMA 0.05
-
-#define DELTA 0.4
-#define DUREE_INCUBATION 3
-#define DUREE_ZOMBIE 3
-
-
-
-
-void creation_graphe(Graphe* G, const char* grapheFileName);
-void Afficher_Graphe(Graphe* G);
-void Simulation(Graphe* G);
-void Condition_Initiale(Graphe* G,Graphe* Gi);
-void Test_Sain(Graphe* G,int source);
-void Journee(Graphe* G);
-void MetricsCalc(Graphe* Gi, Graphe *Gf);
+#include "Projet_C.h"
 
 
 int main(void)
 {
 	Graphe G;
 	Graphe Gi;
+	int Choix,n;
+	char Nom_Fichier[100];
 	srand(time(NULL));
-	creation_graphe(&G,"graph.txt");
-	creation_graphe(&Gi,"graph.txt");
-	Condition_Initiale(&G,&Gi);
-	printf("Veuillez sélectionner votre option :\n1 : Lancer la simulation\n");
-	Simulation(&G);
+	printf("Veuillez sélectionner votre option :\n1 : Générer un graphe grille de taille n\n2 : Utiliser un fichier de graphe quelconque\n");
+	scanf("%d", &Choix);
+	switch(Choix)
+	{
+		case 1 :
+		 printf("Veuillez saisir la taille du graphe grille (dimension d'un côté)\nn = ");
+		 scanf("%d", &n);
+		 Creer_Graphe_Grille(n);
+		 creation_graphe(&G,"graph_grille.txt");
+		 creation_graphe(&Gi,"graph_grille.txt");
+		 Condition_Initiale(&G,&Gi);
+		 Simulation(&G,1);
+		break;
+		case 2 :
+		 printf("Veuillez saisir le nom du fichier à exploiter\nNom du fichier :");
+		 scanf("%s", Nom_Fichier);
+		 creation_graphe(&G,Nom_Fichier);
+		 creation_graphe(&Gi,Nom_Fichier);
+		 Condition_Initiale(&G,&Gi);
+		 Simulation(&G,2);
+		break;
+	}
 	MetricsCalc(&Gi,&G);
 
 	return 0;
 }
-
-
-
 
 
 
@@ -131,27 +122,44 @@ void Journee(Graphe* G)
 	}
 }
 
-void Simulation(Graphe* G)
+void Simulation(Graphe* G,int Type_Graphe)
 {
-	int choix=1;
-	while(choix!=3)
+	int choix=1,nb_jours;
+	while(choix!=4)
 	{
-		Afficher_Graphe(G);
-		printf("\nVoulez-vous :\n1 : Passer un jour\n2 : Passer cent jours\n3 : quitter\n");
-		scanf("%d", &choix);
-		if(choix==1)
+		switch(Type_Graphe)
 		{
-			Journee(G);
-			G->metrics->simulationDuration++;
+			case 1 :
+			 Afficher_Graphe_Grille(G);
+			break;
+			case 2 :
+			 Afficher_Graphe_Quelconque(G);
+			break;
 		}
-		else if(choix==2)
+		printf("Voulez-vous :\n1 : Passer un jour\n2 : Passer dix jours\n3 : Selectionner le nombre de jours à passer\n4 : quitter\n\nChoix : ");
+		scanf("%d", &choix);
+		switch(choix)
 		{
-			for(int i=0;i<100;i++)
-			{
-				Journee(G);
-				G->metrics->simulationDuration++;
-			}
-
+			case 1 :
+			 Journee(G);
+			 G->metrics->simulationDuration++;
+			break;
+			case 2 :
+			 for(int i=0;i<10;i++)
+			 {
+				 Journee(G);
+				 G->metrics->simulationDuration++;
+			 }
+			break;
+			case 3 :
+			 printf("Combien de jours voulez vous passer ?\n");
+			 scanf("%d", &nb_jours);
+			 for(int i=0;i<nb_jours;i++)
+			 {
+			 	Journee(G);
+			 	G->metrics->simulationDuration++;
+			 }
+			break;
 		}
 	}
 }
@@ -183,11 +191,9 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 	}
 	fprintf(file,"Temps moyen de contamination, pondéré par la distance initiale au plus proche malade : %f jours\n",Gf->metrics->avgInfectionDate/pathSum);
 	fclose(file);
-	printf("Les métriques ont été générées dans le fichier Métriques.txt");
+	printf("Les métriques ont été générées dans le fichier Métriques.txt\n");
 
 }
-
-
 
 
 
