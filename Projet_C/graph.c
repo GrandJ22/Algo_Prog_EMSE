@@ -156,6 +156,7 @@ void Afficher_Graphe_Quelconque(Graphe* G)
 void Afficher_Graphe_Grille(Graphe* G)
 {
 	int taille = (int) sqrt( (double) G->nb_sommets );
+	printf("Légende : \033[0;33mInfecte \033[0;31mMalade \033[0;35mMort \033[0;32mZombie \033[0;36m Immunisé\033[0m\n\n");
 	for(int i=0;i<taille;i++)
 	{
 		for(int j=0;j<taille;j++)
