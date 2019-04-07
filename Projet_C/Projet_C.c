@@ -24,7 +24,7 @@ void Condition_Initiale(Graphe* G,Graphe* Gi);
 void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
 void MetricsCalc(Graphe* Gi, Graphe *Gf);
-
+void Vaccination(Graphe* G,int vaccinationNumber);
 
 int main(void)
 {
@@ -40,10 +40,6 @@ int main(void)
 
 	return 0;
 }
-
-
-/* TEST */
-
 
 
 void Condition_Initiale(Graphe* G,Graphe* Gi)
@@ -99,7 +95,7 @@ void Journee(Graphe* G)
 		{
 			case sain :
 			 	Test_Sain(G,i);
-			break;
+			    break;
 			case infecte :
 			 	G->population[i].temps_incubation++;
 				r=((float)rand())/RAND_MAX;
@@ -116,7 +112,7 @@ void Journee(Graphe* G)
 					G->metrics->infectedCount--;
 					G->metrics->immuneCount++;
 				}
-			break;
+			    break;
 
 			case malade :
 			 	r=((float)rand())/RAND_MAX;
@@ -126,31 +122,41 @@ void Journee(Graphe* G)
 					G->metrics->sickCount--;
 					G->metrics->deadCount++;
 			 	}
-			break;
+			    break;
 		}
 	}
 }
 
 void Simulation(Graphe* G)
 {
-	int choix=1;
-	while(choix!=3)
+	int choix;
+	int vaccinationNumber = 0;
+	while(choix!=4)
 	{
 		Afficher_Graphe(G);
-		printf("\nVoulez-vous :\n1 : Passer un jour\n2 : Passer cent jours\n3 : quitter\n");
+		printf("\nVoulez-vous :\n1 : Passer un jour\n2 : Passer cent jours\n3 : Vacciner une partie de la population\n4 : quitter\n");
 		scanf("%d", &choix);
-		if(choix==1)
-		{
-			Journee(G);
-			G->metrics->simulationDuration++;
-		}
-		else if(choix==2)
-		{
-			for(int i=0;i<100;i++)
-			{
-				Journee(G);
-				G->metrics->simulationDuration++;
-			}
+		switch(choix){
+		    case 1 :
+                Journee(G);
+                G->metrics->simulationDuration++;
+		        break;
+		    case 2 :
+                for(int i=0;i<100;i++)
+                {
+                    Journee(G);
+                    G->metrics->simulationDuration++;
+                }
+		        break;
+		    case 3 :
+		        printf("Combien de personnes souhaitez-vous vacciner ?\n");
+		        scanf("%d",&vaccinationNumber);
+		        Vaccination(G,vaccinationNumber);
+		        break;
+		    default:
+		        break;
+
+
 
 		}
 	}
@@ -187,7 +193,23 @@ void MetricsCalc(Graphe* Gi, Graphe* Gf){
 
 }
 
-
+void Vaccination(Graphe* G,int vaccinationNumber){
+    int toVaccinate;
+    int i = 0,k = 0;
+    while (vaccinationNumber != 0){
+        toVaccinate = rand()%G->metrics->healthyCount;
+        while(k != toVaccinate){
+            if(G->population[i].etat == sain){
+                k++;
+            }
+            i++;
+        }
+        G->population[i].etat=immunise;
+        vaccinationNumber--;
+        G->metrics->immuneCount++;
+        G->metrics->healthyCount--;
+    }
+}
 
 
 
