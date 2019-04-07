@@ -26,7 +26,7 @@ int main(void)
 		 creation_graphe(&Gi,Nom_Fichier);
 		break;
 	}
-	Condition_Initiale(&G,&Gi);
+	Condition_Initiale(&G,&Gi,Choix);
 	Simulation(&G,Choix);
 	MetricsCalc(&Gi,&G);
 
@@ -34,23 +34,53 @@ int main(void)
 }
 
 
-void Condition_Initiale(Graphe* G,Graphe* Gi)
+void Condition_Initiale(Graphe* G,Graphe* Gi,int Type_Graphe)
 {
-	int Choix_Noeud,Choix=1;
-	while(Choix==1)
-	{	
-		printf("Qui va mourir ce soir ?\n");
-		scanf("%d", &Choix_Noeud);
-		G->population[Choix_Noeud-1].etat=infecte;
-		G->metrics->healthyCount--;
-		G->metrics->infectedCount++;
-		Gi->population[Choix_Noeud-1].etat=infecte;
-		Gi->metrics->healthyCount--;
-		Gi->metrics->infectedCount++;
-		G->population[Choix_Noeud-1].infection_date=0;
-		printf("Quelqu'un d'autre ?\nOui : 1\nNon : 2\n");
-		scanf("%d", &Choix);
-		printf("\n");
+	int Choix_Noeud,Choix,Continuer=1,nb_infectes;
+	printf("Veuillez sélectionner une option.\n1 : Infection manuelle des individus.\n2 : Infection automatique des individus.\nChoix : ");
+	scanf("%d", &Choix);
+	switch(Choix)
+	{
+		case 1 :
+		 while(Continuer==1)
+		 {	
+			 switch(Type_Graphe)
+			 {
+			 	case 1 :
+				 Afficher_Graphe_Grille(G);
+				break;
+				case 2 :
+				 Afficher_Graphe_Quelconque(G);
+				break;
+			 }
+			 printf("Veuillez sélectioner l'individu à infecter");
+			 scanf("%d", &Choix_Noeud);
+			 G->population[Choix_Noeud-1].etat=infecte;
+			 G->metrics->healthyCount--;
+			 G->metrics->infectedCount++;
+			 Gi->population[Choix_Noeud-1].etat=infecte;
+			 Gi->metrics->healthyCount--;
+			 Gi->metrics->infectedCount++;
+			 G->population[Choix_Noeud-1].infection_date=0;
+			 printf("Voulez vous infecter quelqu'un d'autre ?\nOui : 1\nNon : 2\nChoix : ");
+			 scanf("%d", &Choix);
+			 printf("\n");
+		 }
+		break;
+		case 2 :
+		 printf("Combien d'invdivus voulez vous infecter ? ( %d individu disponibles )\n",G->nb_sommets);
+		 scanf("%d", &nb_infectes);
+		 Infection_Aleatoire(G,Gi,nb_infectes);
+		break;
+	}
+	switch(Type_Graphe)
+	{
+		case 1 :
+		 Afficher_Graphe_Grille(G);
+		break;
+		case 2 :
+		 Afficher_Graphe_Quelconque(G);
+		break;
 	}
 }
 
@@ -231,7 +261,31 @@ void Vaccination(Graphe* G,int vaccinationNumber){
     }
 }
 
-
+void Infection_Aleatoire(Graphe *G,Graphe *Gi,int nb_infectes)
+{
+	int i = 0,k = 0,toInfect;
+    	while (nb_infectes != 0)
+	{
+        	toInfect = (rand()%G->metrics->healthyCount) + 1;
+        	do
+		{
+            		if(G->population[i].etat == sain)
+			{
+				k++;
+            	 	}
+            	 	i++;
+        	}while(k != toInfect);
+        	nb_infectes--;
+		G->population[i-1].etat=infecte;
+        	G->metrics->infectedCount++;
+        	G->metrics->healthyCount--;
+		Gi->population[i-1].etat=infecte;
+        	Gi->metrics->infectedCount++;
+        	Gi->metrics->healthyCount--;
+		i = 0;
+		k = 0;
+    	}
+}
 
 
 

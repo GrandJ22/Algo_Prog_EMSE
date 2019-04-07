@@ -31,11 +31,11 @@
 void creation_graphe(Graphe* G, const char* grapheFileName);
 void Afficher_Graphe(Graphe* G);
 void Simulation(Graphe* G, int Type_Graphe);
-void Condition_Initiale(Graphe* G,Graphe* Gi);
+void Condition_Initiale(Graphe* G,Graphe* Gi,int Type_Graphe);
 void Test_Sain(Graphe* G,int source);
 void Journee(Graphe* G);
 void MetricsCalc(Graphe* Gi, Graphe *Gf);
 void Vaccination(Graphe* G,int vaccinationNumber);
-
+void Infection_Aleatoire(Graphe *G,Graphe *Gi,int nb_infectes);
 
 #endif //ALGO_PROG_EMSE_PROJET_C_H
