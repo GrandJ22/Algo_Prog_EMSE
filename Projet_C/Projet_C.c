@@ -5,6 +5,8 @@ int main(void)
 	Graphe G;
 	Graphe Gi;
 	int Choix,n;
+	Arc* current;
+	Arc* current_i;
 	char Nom_Fichier[100];
 	srand(time(NULL));
 	printf("Veuillez sélectionner votre option :\n1 : Générer un graphe grille de taille n\n2 : Utiliser un fichier de graphe quelconque\n");
@@ -29,7 +31,23 @@ int main(void)
 	Condition_Initiale(&G,&Gi,Choix);
 	Simulation(&G,Choix);
 	MetricsCalc(&Gi,&G);
+	for(int i =0;i<G.nb_sommets;i++){
 
+	  while(G.voisins[i]!=NULL){
+	    current = G.voisins[i];
+	    current_i = Gi.voisins[i];
+	    while(current->Suivant != NULL){
+	      current = current->Suivant;
+	      current_i = current_i->Suivant;
+	    }
+	    free(current);
+	    free(current_i);
+	  }
+	  free(G.voisins[i]);
+	  free(Gi.voisins[i]);
+	}
+	free(G.population);
+	free(Gi.population);
 	return 0;
 }
 
